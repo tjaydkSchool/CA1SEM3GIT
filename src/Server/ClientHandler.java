@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -49,15 +50,15 @@ public class ClientHandler extends Thread {
                     break;
                 case "USER":
                     String clientName = split.next();
-                    List<ClientHandler> cl = server.getClientList();
+                    HashMap userHashMap = server.getUserHashMap();
                     try {
-                        for (int i = 0; i < cl.size(); i++) {
-                            if (!cl.get(i).getName().equals(clientName)) {
-                                this.setName(clientName);
-                            } else {
-                                throw new ClientNameAlreadyInUseException();
-                            }
+                        if (userHashMap == null || !userHashMap.containsKey(clientName)) {
+                            this.setName(clientName);
+                            server.addUser(clientName, this);
+                        } else {
+                            throw new ClientNameAlreadyInUseException();
                         }
+
                     } catch (ClientNameAlreadyInUseException ex) {
                         System.out.println("Username already in use");
                     }
