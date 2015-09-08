@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
@@ -28,6 +29,7 @@ public class MSNServer {
     private static ServerSocket serverSocket;
     private static final Properties props = Utility.initProperties("server.properties");
     private List<ClientHandler> clientList = new ArrayList();
+    private HashMap userHashMap = new HashMap();
 
     public static void main(String[] args) {
         new MSNServer().startServer();
@@ -64,6 +66,14 @@ public class MSNServer {
         for (ClientHandler clientList1 : clientList) {
             clientList1.send(msg);
         }
+    }
+    
+    public void addUser(String user, Thread t) {
+        userHashMap.put(user, t);
+    }
+    
+    public HashMap getUserHashMap() {
+        return userHashMap;
     }
     
     public void stopServer() {
