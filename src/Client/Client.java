@@ -16,7 +16,7 @@ import java.util.Scanner;
  *
  * @author Asnorrason
  */
-public class Client {
+public class Client extends Thread{
 
     private String msg = "";
     private Socket socket;
@@ -40,6 +40,9 @@ public class Client {
     public void receive() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    @Override
+    public void run(){}
     
     
     public String getMsg() {
