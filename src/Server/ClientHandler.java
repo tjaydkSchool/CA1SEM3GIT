@@ -52,7 +52,7 @@ public class ClientHandler extends Thread {
                     List<ClientHandler> cl = server.getClientList();
                     try {
                         for (int i = 0; i < cl.size(); i++) {
-                            if (!cl.get(i).equals(clientName)) {
+                            if (!cl.get(i).getName().equals(clientName)) {
                                 this.setName(clientName);
                             } else {
                                 throw new ClientNameAlreadyInUseException();
