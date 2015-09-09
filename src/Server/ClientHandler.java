@@ -46,7 +46,7 @@ public class ClientHandler extends Thread {
                         recieverList.add(listRecievers.next());
                     }
                     msg = split.next();
-                    System.out.println("Message from: " + this.getName() + ": " + msg);
+                    send("Message from: " + this.getName() + ": " + msg);
                     break;
                 case "USER":
                     String clientName = split.next();
@@ -56,6 +56,7 @@ public class ClientHandler extends Thread {
                             this.setName(clientName);
                             server.addUser(clientName, this);
                         } else {
+                            output.println("Username already taken, please choose another");
                             throw new ClientNameAlreadyInUseException();
                         }
 
