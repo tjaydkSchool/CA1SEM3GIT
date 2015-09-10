@@ -58,7 +58,7 @@ public class Client extends Observable implements Runnable {
             public void run() {
 
                 while (true) {
-                    String msg = input.nextLine();
+                    Object msg = input.nextLine();
                     System.out.println("Message from client: " + msg);
                     if(msg.equals("STOP#")) {
                         try {

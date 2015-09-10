@@ -5,14 +5,20 @@ import java.util.Observable;
 import java.util.Observer;
 import static Server.MSNServer.props;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.swing.DefaultListModel;
 
 public class GUI extends javax.swing.JFrame implements Observer {
 
-    Client client = new Client();
-    
+    private Client client = new Client();
+    private List<String> chm = new ArrayList();
+    private DefaultListModel model;
+
     public GUI() {
         initComponents();
     }
@@ -39,11 +45,6 @@ public class GUI extends javax.swing.JFrame implements Observer {
         chatField.setRows(5);
         jScrollPane1.setViewportView(chatField);
 
-        userList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "HelleBarn" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jScrollPane2.setViewportView(userList);
 
         actionBtn.setText("Connect");
@@ -64,8 +65,8 @@ public class GUI extends javax.swing.JFrame implements Observer {
                     .addComponent(msgField))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2)
-                    .addComponent(actionBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                    .addComponent(actionBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -87,17 +88,20 @@ public class GUI extends javax.swing.JFrame implements Observer {
 
     private void actionBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionBtnActionPerformed
         try {
-            if(actionBtn.getText().equals("Connect")){
-            client.connect(props.getProperty("serverIp"), Integer.parseInt(props.getProperty("port")));
-            client.addObserver(this);
-            actionBtn.setText("Send");
-            } else if(actionBtn.getText().equals("Send")){
+            if (actionBtn.getText().equals("Connect")) {
+                client.connect(props.getProperty("serverIp"), Integer.parseInt(props.getProperty("port")));
+                client.addObserver(this);
+                actionBtn.setText("Choose username");
+            } else if (actionBtn.getText().equals("Choose username") ) {
+                client.send("USER#" + msgField.getText());
+                actionBtn.setText("Send");
+            } else if (actionBtn.getText().equals("Send")) {
                 String reciepients = userList.getSelectionModel().toString(); // DETTE SKAL VIRKE MED EN LISTE DA DET DER KOMMER UD ER HELE LISTENS NAVN PLUS INDEX NUMMER
-                if(reciepients.equals(null) || reciepients.equals("") || reciepients.equals("-1")) {
+                if (reciepients.equals(null) || reciepients.equals("") || reciepients.equals("-1")) {
                     reciepients = "*";
                 }
-                client.send("MSG#HelleBarn#" + msgField.getText());
-                String message = "MSG#HelleBarn#" + msgField.getText();
+                client.send("MSG#*#" + msgField.getText());
+                String message = "MSG#*#" + msgField.getText();
                 System.out.println("Message from GUI: " + message);
             }
         } catch (IOException ex) {
@@ -150,8 +154,34 @@ public class GUI extends javax.swing.JFrame implements Observer {
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void update(Observable o, Object arg) {
-        String msg = arg.toString();
-        chatField.append(msg + "\n");
+    public synchronized void update(Observable o, Object arg) {
+        Scanner scanArg = new Scanner(arg.toString()).useDelimiter("#");
+
+        String action = scanArg.next();
+
+        switch (action) {
+            case "USERLIST":
+                String users = scanArg.next();
+                Scanner scanUser = new Scanner(users).useDelimiter(", ");
+                while (scanUser.hasNext()) {
+                    String currentUserInList = scanUser.next();
+                    if (!chm.contains(currentUserInList)) {
+                        chm.add(currentUserInList);
+                    }
+                }
+
+                model = new DefaultListModel();
+                userList.setModel(model);
+                for (Object chm1 : chm) {
+                    model.addElement(chm1);
+                }
+                break;
+            case "MSG":
+                String sendFrom = scanArg.next();
+                String message = scanArg.next();
+                chatField.append(sendFrom + ": " + message + "\n");
+                break;
+        }
+
     }
 }

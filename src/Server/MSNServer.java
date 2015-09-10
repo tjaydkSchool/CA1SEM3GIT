@@ -15,7 +15,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +34,7 @@ public class MSNServer {
     private boolean running = true;
     private static ServerSocket serverSocket;
     private List<ClientHandler> clientList = new ArrayList();
-    private HashMap userHashMap = new HashMap();
+    private ConcurrentMap<ClientHandler, String> userHashMap = new ConcurrentHashMap();
 
 //    SERVERLOGFILE
     public static Logger log = Logger.getLogger(MSNServer.class.getName());
@@ -68,6 +71,7 @@ public class MSNServer {
                     Thread t = new Thread(ch);
                     t.start();
                     clientList.add(ch);
+                    userHashMap.put(ch, ch.toString());
                 } while (running);
             } catch (IOException ex) {
                 Logger.getLogger(MSNServer.class.getName()).log(Level.SEVERE, null, ex);
@@ -87,18 +91,32 @@ public class MSNServer {
         return clientList;
     }
 
-    public void send(String msg) {
+    public synchronized void send(String msg) {
         for (ClientHandler clientList1 : clientList) {
             clientList1.send(msg);
         }
     }
 
-    public void addUser(String user, Object o) {
-        userHashMap.put(user, o);
+    public synchronized boolean addUser(ClientHandler client, String name) {
+        String userName = name;
+        while(userHashMap.containsValue(userName)) {
+            Random ran = new Random();
+            userName+=(ran.nextInt(100) + 1) + "";
+        }
+        userHashMap.replace(client, name);
+        this.send("USERLIST#" + getClientUserList());
+        return true;
     }
 
-    public HashMap getUserHashMap() {
-        return userHashMap;
+    public String getClientUserList() {
+        String clientUserList = "";
+        for (String userHashMap1 : userHashMap.values()) {
+            System.out.println("Userlist: " + userHashMap1);
+            clientUserList+=userHashMap1+",";
+        }
+        return clientUserList;
+        
+        
     }
 
     public void stopServer() {
