@@ -27,9 +27,9 @@ import java.util.logging.SimpleFormatter;
  */
 public class MSNServer {
 
+    public static final Properties props = Utility.initProperties("server.properties");
     private boolean running = true;
     private static ServerSocket serverSocket;
-    private static final Properties props = Utility.initProperties("server.properties");
     private List<ClientHandler> clientList = new ArrayList();
     private HashMap userHashMap = new HashMap();
 
@@ -65,7 +65,8 @@ public class MSNServer {
                 do {
                     Socket socket = ss.accept();
                     ClientHandler ch = new ClientHandler(socket, this);
-                    ch.start();
+                    Thread t = new Thread(ch);
+                    t.start();
                     clientList.add(ch);
                 } while (running);
             } catch (IOException ex) {
@@ -92,8 +93,8 @@ public class MSNServer {
         }
     }
 
-    public void addUser(String user, Thread t) {
-        userHashMap.put(user, t);
+    public void addUser(String user, Object o) {
+        userHashMap.put(user, o);
     }
 
     public HashMap getUserHashMap() {
