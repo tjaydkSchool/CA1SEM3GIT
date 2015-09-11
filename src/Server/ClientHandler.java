@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientHandler extends Observable implements Runnable {
 
@@ -18,6 +19,7 @@ public class ClientHandler extends Observable implements Runnable {
     private MSNServer server;
     private String name;
     private String switchString;
+    private ClientHandler ch = this;
 
     public ClientHandler(Socket socket, MSNServer server) throws IOException {
         input = new Scanner(socket.getInputStream());
@@ -39,7 +41,7 @@ public class ClientHandler extends Observable implements Runnable {
         Boolean closeConnection = false;
 
         do {
-            String msgInput = input.next();
+            String msgInput = input.nextLine();
             System.out.println("Message from ClientHandler: " + msgInput);
             List<String> recieverList = new ArrayList();
 
@@ -57,24 +59,14 @@ public class ClientHandler extends Observable implements Runnable {
                     while (listRecievers.hasNext()) {
                         recieverList.add(listRecievers.next());
                     }
-                    msg = split.next();
-                    server.send("Message from: " + this.getName() + ": " + msg);
+                    msg = split.nextLine();
+                    server.send("MSG#" + ch.getName() + msg);
                     break;
                 case "USER":
                     String clientName = split.next();
-                    HashMap userHashMap = server.getUserHashMap();
-                    try {
-                        if (userHashMap == null || !userHashMap.containsKey(clientName)) {
-                            this.setName(clientName);
-                            server.addUser(clientName, this);
-                        } else {
-                            output.println("Username already taken, please choose another");
-                            throw new ClientNameAlreadyInUseException();
-                        }
-
-                    } catch (ClientNameAlreadyInUseException ex) {
-                        System.out.println("Username already in use");
-                    }
+                    server.addUser(ch, clientName);
+                    ch.setName(clientName);
+                    break;
             }
         } while (!closeConnection);
     }
