@@ -56,13 +56,15 @@ public class Client extends Observable implements Runnable {
 
             @Override
             public void run() {
-
-                while (true) {
+                boolean running = true;
+                while (running) {
                     Object msg = input.nextLine();
-                    System.out.println("Message from client: " + msg);
-                    if(msg.equals("STOP#")) {
+                    if (msg.equals("STOP#")) {
                         try {
+                            setChanged();
+                            notifyObservers(msg);
                             socket.close();
+                            running = false;
                         } catch (IOException ex) {
                             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                         }

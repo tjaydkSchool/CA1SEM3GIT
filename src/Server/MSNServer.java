@@ -85,6 +85,7 @@ public class MSNServer {
 
     public void removeClient(ClientHandler ch) {
         clientList.remove(ch);
+        this.send("USERLIST#" + getClientUserList());
     }
 
     public List<ClientHandler> getClientList() {
@@ -103,9 +104,13 @@ public class MSNServer {
             Random ran = new Random();
             userName+=(ran.nextInt(100) + 1) + "";
         }
-        userHashMap.replace(client, name);
+        userHashMap.replace(client, userName);
         this.send("USERLIST#" + getClientUserList());
         return true;
+    }
+    
+    public synchronized void removeUser(ClientHandler client, String name) {
+        userHashMap.remove(client, name);
     }
 
     public String getClientUserList() {

@@ -42,7 +42,6 @@ public class ClientHandler extends Observable implements Runnable {
 
         do {
             String msgInput = input.nextLine();
-            System.out.println("Message from ClientHandler: " + msgInput);
             List<String> recieverList = new ArrayList();
 
             Scanner split = new Scanner(msgInput).useDelimiter("#");
@@ -52,6 +51,8 @@ public class ClientHandler extends Observable implements Runnable {
             switch (action) {
                 case "STOP":
                     closeConnection = true;
+                    server.removeUser(ch, ch.getName());
+                    server.removeClient(ch);
                     break;
                 case "MSG":
                     String recievers = split.next();

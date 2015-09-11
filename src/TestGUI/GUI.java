@@ -21,6 +21,8 @@ public class GUI extends javax.swing.JFrame implements Observer {
 
     public GUI() {
         initComponents();
+        model = new DefaultListModel();
+        userList.setModel(model);
     }
 
     /**
@@ -40,6 +42,11 @@ public class GUI extends javax.swing.JFrame implements Observer {
         actionBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         chatField.setColumns(20);
         chatField.setRows(5);
@@ -92,9 +99,10 @@ public class GUI extends javax.swing.JFrame implements Observer {
                 client.connect(props.getProperty("serverIp"), Integer.parseInt(props.getProperty("port")));
                 client.addObserver(this);
                 actionBtn.setText("Choose username");
-            } else if (actionBtn.getText().equals("Choose username") ) {
+            } else if (actionBtn.getText().equals("Choose username")) {
                 client.send("USER#" + msgField.getText());
                 actionBtn.setText("Send");
+                msgField.setText("");
             } else if (actionBtn.getText().equals("Send")) {
                 String reciepients = userList.getSelectionModel().toString(); // DETTE SKAL VIRKE MED EN LISTE DA DET DER KOMMER UD ER HELE LISTENS NAVN PLUS INDEX NUMMER
                 if (reciepients.equals(null) || reciepients.equals("") || reciepients.equals("-1")) {
@@ -102,12 +110,19 @@ public class GUI extends javax.swing.JFrame implements Observer {
                 }
                 client.send("MSG#*#" + msgField.getText());
                 String message = "MSG#*#" + msgField.getText();
+                msgField.setText("");
                 System.out.println("Message from GUI: " + message);
             }
         } catch (IOException ex) {
             Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_actionBtnActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        if (!actionBtn.getText().equals("Connect")) {
+            client.send("STOP#");
+        }
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments
@@ -156,24 +171,18 @@ public class GUI extends javax.swing.JFrame implements Observer {
     @Override
     public synchronized void update(Observable o, Object arg) {
         Scanner scanArg = new Scanner(arg.toString()).useDelimiter("#");
+        System.out.println("Message from Server to GUI: " + arg.toString());
 
         String action = scanArg.next();
+        
 
         switch (action) {
             case "USERLIST":
+                model.removeAllElements();
                 String users = scanArg.next();
-                Scanner scanUser = new Scanner(users).useDelimiter(", ");
+                Scanner scanUser = new Scanner(users).useDelimiter(",");
                 while (scanUser.hasNext()) {
-                    String currentUserInList = scanUser.next();
-                    if (!chm.contains(currentUserInList)) {
-                        chm.add(currentUserInList);
-                    }
-                }
-
-                model = new DefaultListModel();
-                userList.setModel(model);
-                for (Object chm1 : chm) {
-                    model.addElement(chm1);
+                    model.addElement(scanUser.next());
                 }
                 break;
             case "MSG":
