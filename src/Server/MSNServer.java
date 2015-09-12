@@ -85,16 +85,26 @@ public class MSNServer {
 
     public void removeClient(ClientHandler ch) {
         clientList.remove(ch);
-        this.send("USERLIST#" + getClientUserList());
+        this.sendToAll("USERLIST#" + getClientUserList());
     }
 
     public List<ClientHandler> getClientList() {
         return clientList;
     }
 
-    public synchronized void send(String msg) {
+    public synchronized void sendToAll(String msg) {
         for (ClientHandler clientList1 : clientList) {
             clientList1.send(msg);
+        }
+    }
+    
+    public synchronized void sendToUsers(String msg, List<String> recievers) {
+        for (String reciever : recievers) {
+            for (ClientHandler clientList1 : clientList) {
+                if(clientList1.getName().equals(reciever)) {
+                    clientList1.send(msg);
+                }
+            }
         }
     }
 
@@ -105,7 +115,7 @@ public class MSNServer {
             userName+=(ran.nextInt(100) + 1) + "";
         }
         userHashMap.replace(client, userName);
-        this.send("USERLIST#" + getClientUserList());
+        this.sendToAll("USERLIST#" + getClientUserList());
         return true;
     }
     
@@ -116,7 +126,6 @@ public class MSNServer {
     public String getClientUserList() {
         String clientUserList = "";
         for (String userHashMap1 : userHashMap.values()) {
-            System.out.println("Userlist: " + userHashMap1);
             clientUserList+=userHashMap1+",";
         }
         return clientUserList;

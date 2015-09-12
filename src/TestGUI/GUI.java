@@ -104,11 +104,19 @@ public class GUI extends javax.swing.JFrame implements Observer {
                 actionBtn.setText("Send");
                 msgField.setText("");
             } else if (actionBtn.getText().equals("Send")) {
-                String reciepients = userList.getSelectionModel().toString(); // DETTE SKAL VIRKE MED EN LISTE DA DET DER KOMMER UD ER HELE LISTENS NAVN PLUS INDEX NUMMER
-                if (reciepients.equals(null) || reciepients.equals("") || reciepients.equals("-1")) {
-                    reciepients = "*";
+                List reciepients = userList.getSelectedValuesList(); // DETTE SKAL VIRKE MED EN LISTE DA DET DER KOMMER UD ER HELE LISTENS NAVN PLUS INDEX NUMMER
+                System.out.println("Liste: " + reciepients);
+                String recievers = "";
+                
+                if(!(reciepients.isEmpty())) {
+                    for (Object reciepient : reciepients) {
+                        recievers+=reciepient.toString() + ",";
+                    }
+                } else {
+                    recievers = "*";
                 }
-                client.send("MSG#*#" + msgField.getText());
+                
+                client.send("MSG#" + recievers + "#" + msgField.getText());
                 String message = "MSG#*#" + msgField.getText();
                 msgField.setText("");
                 System.out.println("Message from GUI: " + message);

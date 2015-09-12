@@ -27,11 +27,11 @@ public class ClientHandler extends Observable implements Runnable {
         this.socket = socket;
         this.server = server;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -42,7 +42,6 @@ public class ClientHandler extends Observable implements Runnable {
 
         do {
             String msgInput = input.nextLine();
-            List<String> recieverList = new ArrayList();
 
             Scanner split = new Scanner(msgInput).useDelimiter("#");
             String action = split.next();
@@ -55,13 +54,19 @@ public class ClientHandler extends Observable implements Runnable {
                     server.removeClient(ch);
                     break;
                 case "MSG":
+                    List<String> recieverList = new ArrayList();
                     String recievers = split.next();
                     Scanner listRecievers = new Scanner(recievers).useDelimiter(",");
-                    while (listRecievers.hasNext()) {
-                        recieverList.add(listRecievers.next());
+                    if (!recievers.equals("*")) {
+                        while (listRecievers.hasNext()) {
+                            recieverList.add(listRecievers.next());
+                        }
+                        msg = split.nextLine();
+                        server.sendToUsers(("MSG#" + ch.getName() + msg), recieverList);
+                        break;
                     }
                     msg = split.nextLine();
-                    server.send("MSG#" + ch.getName() + msg);
+                    server.sendToAll("MSG#" + ch.getName() + msg);
                     break;
                 case "USER":
                     String clientName = split.next();
