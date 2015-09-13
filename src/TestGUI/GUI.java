@@ -1,6 +1,7 @@
 package TestGUI;
 
 import Client.Client;
+import static Server.MSNServer.log;
 import java.util.Observable;
 import java.util.Observer;
 import static Server.MSNServer.props;
@@ -8,7 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -23,6 +23,7 @@ public class GUI extends javax.swing.JFrame implements Observer {
         initComponents();
         model = new DefaultListModel();
         userList.setModel(model);
+        msgField.setEnabled(false);
     }
 
     /**
@@ -98,13 +99,14 @@ public class GUI extends javax.swing.JFrame implements Observer {
             if (actionBtn.getText().equals("Connect")) {
                 client.connect(props.getProperty("serverIp"), Integer.parseInt(props.getProperty("port")));
                 client.addObserver(this);
+                msgField.setEnabled(true);
                 actionBtn.setText("Choose username");
             } else if (actionBtn.getText().equals("Choose username")) {
                 client.send("USER#" + msgField.getText());
                 actionBtn.setText("Send");
                 msgField.setText("");
             } else if (actionBtn.getText().equals("Send")) {
-                List reciepients = userList.getSelectedValuesList(); // DETTE SKAL VIRKE MED EN LISTE DA DET DER KOMMER UD ER HELE LISTENS NAVN PLUS INDEX NUMMER
+                List reciepients = userList.getSelectedValuesList();
                 System.out.println("Liste: " + reciepients);
                 String recievers = "";
                 
@@ -122,6 +124,7 @@ public class GUI extends javax.swing.JFrame implements Observer {
                 System.out.println("Message from GUI: " + message);
             }
         } catch (IOException ex) {
+            log.warning(ex.getMessage());
             Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_actionBtnActionPerformed
@@ -179,7 +182,6 @@ public class GUI extends javax.swing.JFrame implements Observer {
     @Override
     public synchronized void update(Observable o, Object arg) {
         Scanner scanArg = new Scanner(arg.toString()).useDelimiter("#");
-        System.out.println("Message from Server to GUI: " + arg.toString());
 
         String action = scanArg.next();
         

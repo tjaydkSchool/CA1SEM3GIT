@@ -46,9 +46,6 @@ public class Client extends Observable implements Runnable {
         output.println(sendMsg);
     }
 
-    public void receive() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 
     @Override
     public void run() {

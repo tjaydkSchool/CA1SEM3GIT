@@ -55,10 +55,8 @@ public class MSNServer {
             Logger.getLogger(MSNServer.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-//        FIX THIS SO IT LOOKS BETTER
-
         try {
-            log.info("First message in log");
+            log.info("Server started");
 
             String ip = props.getProperty("serverIp");
             int port = Integer.parseInt(props.getProperty("port"));
@@ -74,9 +72,11 @@ public class MSNServer {
                     userHashMap.put(ch, ch.toString());
                 } while (running);
             } catch (IOException ex) {
+                log.warning(ex.getMessage());
                 Logger.getLogger(MSNServer.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (SecurityException ex) {
+            log.warning(ex.getMessage());
             Logger.getLogger(MSNServer.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             fh.close();
@@ -112,15 +112,18 @@ public class MSNServer {
         String userName = name;
         while(userHashMap.containsValue(userName)) {
             Random ran = new Random();
-            userName+=(ran.nextInt(100) + 1) + "";
+            userName+=Integer.toString(ran.nextInt(100) + 1);
         }
         userHashMap.replace(client, userName);
         this.sendToAll("USERLIST#" + getClientUserList());
+        
+        log.info("User logged onto server: " + userName);
         return true;
     }
     
     public synchronized void removeUser(ClientHandler client, String name) {
         userHashMap.remove(client, name);
+        log.info("User logged of server: " + name);
     }
 
     public String getClientUserList() {
@@ -134,6 +137,7 @@ public class MSNServer {
     }
 
     public void stopServer() {
+        log.info("Server stopped");
         running = false;
     }
 
